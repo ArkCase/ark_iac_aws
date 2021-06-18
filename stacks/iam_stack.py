@@ -43,7 +43,11 @@ class IamStack(core.Stack):
         )
         policy_to_create_pipelines.add_statements(iam.PolicyStatement(
             effect=iam.Effect.ALLOW,
-            actions=apply_cdk_stack_permissions+['codepipeline:CreatePipeline',
+            actions=apply_cdk_stack_permissions+['codebuild:BatchGetProjects',
+                                                 'codebuild:CreateProject',
+                                                 'codebuild:DeleteProject',
+                                                 'codebuild:UpdateProject',
+                                                 'codepipeline:CreatePipeline',
                                                  'codepipeline:DeletePipeline',
                                                  'codepipeline:GetPipeline',
                                                  'codepipeline:GetPipelineState',
@@ -58,7 +62,6 @@ class IamStack(core.Stack):
                                                  'iam:GetRolePolicy',
                                                  'iam:PassRole',
                                                  'iam:PutRolePolicy',
-                                                 'kms:*',
                                                  'kms:CreateAlias',
                                                  'kms:CreateKey',
                                                  'kms:DescribeKey',
