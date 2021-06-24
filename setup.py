@@ -15,16 +15,21 @@ setuptools.setup(
 
     author="author",
 
-    package_dir={"": "ark_iac_aws"},
-    packages=setuptools.find_packages(where="ark_iac_aws"),
+    package_dir={"": "stacks"},
+    packages=setuptools.find_packages(where="stacks"),
 
     install_requires=[
         "aws-cdk.core==1.108.1",
         "aws-cdk.aws_iam==1.108.1",
-        "aws-cdk.aws_sqs==1.108.1",
         "aws-cdk.aws_sns==1.108.1",
         "aws-cdk.aws_sns_subscriptions==1.108.1",
         "aws-cdk.aws_s3==1.108.1",
+        "aws-cdk.aws_ecr==1.108.1",
+        "aws-cdk.aws_codepipeline==1.108.1",
+        "aws-cdk.aws_codepipeline_actions==1.108.1",
+        "aws-cdk.aws_codebuild==1.108.1",
+        "aws-cdk.aws_events==1.108.1",
+        "aws-cdk.aws_events_targets==1.108.1",
     ],
 
     python_requires=">=3.6",
