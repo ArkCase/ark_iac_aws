@@ -14,13 +14,16 @@ from aws_cdk import (
 
 # List of all the repos from GitHub that we are setting up pipelines for
 repos = ['ark_base',
-         'ark_base_tomcat',
-         'ark_base_java',
+         'ark_base_java11_tomcat9',
+         'ark_base_java8_tomcat9',
+         'ark_base_java8',
+         'ark_base_java11',
          'ark_snowbound',
          'ark_activemq',
          ]
+
 # List of emails to subscribe to SNS topic notifications (ECR, CodeBuild, and CodePipeline failures)
-emails_to_subscribe = ['jon.holman@armedia.com']
+emails_to_subscribe = ['devops@armedia.com']
 
 # CodeBuild timeout
 codebuild_timeout_in_minutes = 60
@@ -48,7 +51,7 @@ class PipelinesStack(core.Stack):
                                                                'build': {
                                                                    'commands': [
                                                                        "echo Logging in to Amazon ECR...",
-                                                                       f"$(aws ecr get-login --no-include-email --region {core.Aws.REGION})",
+                                                                       "$(aws ecr get-login --no-include-email --region ap-south-1)",
 
                                                                        "echo $RepositoryName",
                                                                        "echo $FullCommitId",
@@ -56,7 +59,7 @@ class PipelinesStack(core.Stack):
                                                                        "commitId=$(echo $FullCommitId | cut -c1-7)",
                                                                        "dateStamp=$(date +%Y%m%d)",
                                                                        "echo Repo Name: $repoName",
-                                                                       "echo Repo Name: $commitId",
+                                                                       "echo Commit ID: $commitId",
                                                                        "ls",
                                                                        "existingTags=$(aws ecr list-images --repository-name $repoName --output json --query 'imageIds[*].imageTag')",
                                                                        "echo Tags that already exist in this ECR repo: $existingTags"
@@ -71,10 +74,10 @@ class PipelinesStack(core.Stack):
                                                                        if test -f Dockerfile; then
                                                                         echo Build started on `date`
                                                                         echo Building the Docker image...
-                                                                        docker build -t {core.Aws.ACCOUNT_ID}.dkr.ecr.{core.Aws.REGION}.amazonaws.com/$repoName:$dateStamp-$commitId .
+                                                                        docker build -t {core.Aws.ACCOUNT_ID}.dkr.ecr.ap-south-1.amazonaws.com/$repoName:$dateStamp-$commitId .
                                                                         echo Build completed on `date`
                                                                         echo Pushing the Docker image to Amazon ECR
-                                                                        docker push {core.Aws.ACCOUNT_ID}.dkr.ecr.{core.Aws.REGION}.amazonaws.com/$repoName:$dateStamp-$commitId
+                                                                        docker push {core.Aws.ACCOUNT_ID}.dkr.ecr.ap-south-1.amazonaws.com/$repoName:$dateStamp-$commitId
                                                                        else
                                                                         echo "There is not a Dockerfile, cannot build"
                                                                        fi
@@ -102,17 +105,23 @@ class PipelinesStack(core.Stack):
 
         # add IAM policy to the Docker Image Build Role to allow it to access ECR
         docker_image_build.add_to_role_policy(iam.PolicyStatement(effect=iam.Effect.ALLOW,
-                                                                  actions=['ecr:GetAuthorizationToken',
-                                                                           'ecr:ListImages',
+                                                                  actions=['ecr:GetAuthorizationToken'],
+                                                                  resources=['*']))
+
+        docker_image_build.add_to_role_policy(iam.PolicyStatement(effect=iam.Effect.ALLOW,
+                                                                  actions=['ecr:ListImages',
                                                                            'ecr:BatchGetImage',
                                                                            'ecr:GetDownloadUrlForLayer',
                                                                            'ecr:InitiateLayerUpload',
                                                                            'ecr:UploadLayerPart',
                                                                            'ecr:CompleteLayerUpload',
                                                                            'ecr:BatchCheckLayerAvailability',
-                                                                           'ecr:PutImage',
-                                                                           ],
-                                                                  resources=['*']))
+                                                                           'ecr:PutImage'],
+                                                                  resources=(
+                                                                      [f'arn:aws:ecr:ap-south-1:{core.Aws.ACCOUNT_ID}:repository/hello-world',
+                                                                       f'arn:aws:ecr:ap-south-1:{core.Aws.ACCOUNT_ID}:repository/base_centos'] +
+                                                                      [f'arn:aws:ecr:ap-south-1:{core.Aws.ACCOUNT_ID}:repository/{repo}' for repo in repos]
+                                                                  )))
 
         # performing the following actions for each repo in the global list at the top of this file
         for repo in repos:
@@ -146,7 +155,7 @@ class PipelinesStack(core.Stack):
                                                                                 actions=[
                                                                                     codepipeline_actions.CodeStarConnectionsSourceAction(
                                                                                         # This connection arn references the GitHub connection that had to be created beforehand manually in the console.
-                                                                                        connection_arn="arn:aws:codestar-connections:us-east-1:345280441424:connection/d9992729-173c-4f21-aa48-ba39a65198a3",
+                                                                                        connection_arn="arn:aws:codestar-connections:ap-south-1:345280441424:connection/d04bc433-9375-45e1-aba6-05844fd22558",
                                                                                         action_name="GitHub_Source",
                                                                                         owner="ArkCase",
                                                                                         repo=repo,
@@ -159,10 +168,10 @@ class PipelinesStack(core.Stack):
                                                                                         action_name="Docker_Image_Build",
                                                                                         project=docker_image_build,
                                                                                         environment_variables={
-                                                                                                    'RepositoryName': {'value': '#{Source.FullRepositoryName}',
-                                                                                                                       'type': codebuild.BuildEnvironmentVariableType.PLAINTEXT},
-                                                                                                    'FullCommitId': {'value': '#{Source.CommitId}',
-                                                                                                                     'type': codebuild.BuildEnvironmentVariableType.PLAINTEXT}
+                                                                                            'RepositoryName': {'value': '#{Source.FullRepositoryName}',
+                                                                                                               'type': codebuild.BuildEnvironmentVariableType.PLAINTEXT},
+                                                                                            'FullCommitId': {'value': '#{Source.CommitId}',
+                                                                                                             'type': codebuild.BuildEnvironmentVariableType.PLAINTEXT}
                                                                                         },
                                                                                         input=source_output,
                                                                                     )],
@@ -179,5 +188,5 @@ class PipelinesStack(core.Stack):
                                             ),
                                             target=events_targets.SnsTopic(
                                                 topic=sns_topic,
-                                                message=events.RuleTargetInput.from_text(f"Execution ID {events.EventField.from_path('$.detail.execution-id')} for pipeline project {events.EventField.from_path('$.detail.pipeline')} has reached the status of {events.EventField.from_path('$.detail.state')}.  Link: https://console.aws.amazon.com/codesuite/codepipeline/pipelines/{pipelines[repo].pipeline_name}/executions/{events.EventField.from_path('$.detail.execution-id')}/timeline?region=us-east-1 ")),
+                                                message=events.RuleTargetInput.from_text(f"Execution ID {events.EventField.from_path('$.detail.execution-id')} for pipeline project {events.EventField.from_path('$.detail.pipeline')} has reached the status of {events.EventField.from_path('$.detail.state')}.  Link: https://console.aws.amazon.com/codesuite/codepipeline/pipelines/{pipelines[repo].pipeline_name}/executions/{events.EventField.from_path('$.detail.execution-id')}/timeline?region=ap-south-1 ")),
                                             )
