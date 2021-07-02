@@ -20,6 +20,9 @@ repos = ['ark_base',
          'ark_base_java11',
          'ark_snowbound',
          'ark_activemq',
+         'ark_solr',
+         'ark_solr_exporter',
+         'ark_cloudconfig',
          ]
 
 # List of emails to subscribe to SNS topic notifications (ECR, CodeBuild, and CodePipeline failures)
@@ -75,9 +78,10 @@ class PipelinesStack(core.Stack):
                                                                         echo Build started on `date`
                                                                         echo Building the Docker image...
                                                                         docker build -t {core.Aws.ACCOUNT_ID}.dkr.ecr.ap-south-1.amazonaws.com/$repoName:$dateStamp-$commitId .
+                                                                        docker tag {core.Aws.ACCOUNT_ID}.dkr.ecr.ap-south-1.amazonaws.com/$repoName:$dateStamp-$commitId {core.Aws.ACCOUNT_ID}.dkr.ecr.ap-south-1.amazonaws.com/$repoName:latest
                                                                         echo Build completed on `date`
                                                                         echo Pushing the Docker image to Amazon ECR
-                                                                        docker push {core.Aws.ACCOUNT_ID}.dkr.ecr.ap-south-1.amazonaws.com/$repoName:$dateStamp-$commitId
+                                                                        docker push {core.Aws.ACCOUNT_ID}.dkr.ecr.ap-south-1.amazonaws.com/$repoName
                                                                        else
                                                                         echo "There is not a Dockerfile, cannot build"
                                                                        fi
