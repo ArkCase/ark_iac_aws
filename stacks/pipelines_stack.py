@@ -113,6 +113,14 @@ class PipelinesStack(core.Stack):
                                                                   resources=['*']))
 
         docker_image_build.add_to_role_policy(iam.PolicyStatement(effect=iam.Effect.ALLOW,
+                                                                  actions=['s3:ListBucket',
+                                                                           's3:GetObject'],
+                                                                  resources=[
+                                                                      'arn:aws:s3:::arkcase-container-artifacts',
+                                                                      'arn:aws:s3:::arkcase-container-artifacts/*',
+                                                                  ]))
+
+        docker_image_build.add_to_role_policy(iam.PolicyStatement(effect=iam.Effect.ALLOW,
                                                                   actions=['ecr:ListImages',
                                                                            'ecr:BatchGetImage',
                                                                            'ecr:GetDownloadUrlForLayer',
