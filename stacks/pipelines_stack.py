@@ -159,7 +159,7 @@ class PipelinesStack(core.Stack):
                                                                                 actions=[
                                                                                     codepipeline_actions.CodeStarConnectionsSourceAction(
                                                                                         # This connection arn references the GitHub connection that had to be created beforehand manually in the console.
-                                                                                        connection_arn="arn:aws:codestar-connections:ap-south-1:345280441424:connection/d04bc433-9375-45e1-aba6-05844fd22558",
+                                                                                        connection_arn=f"arn:aws:codestar-connections:ap-south-1:{core.Aws.ACCOUNT_ID}:connection/d04bc433-9375-45e1-aba6-05844fd22558",
                                                                                         action_name="GitHub_Source",
                                                                                         owner="ArkCase",
                                                                                         repo=repo,
