@@ -95,17 +95,17 @@ class PipelinesStack(core.Stack):
                                                        ),
                                                        timeout=core.Duration.minutes(codebuild_timeout_in_minutes)
                                                        )
-        docker_image_build.on_state_change('ArkCase Docker Image Build Project State Change',
-                                           event_pattern=events.EventPattern(
-                                               source=["aws.codebuild"],
-                                               detail={
-                                                   "build-status": [{"anything-but": ["IN_PROGRESS", "SUCCEEDED"]}],
-                                               }
-                                           ),
-                                           target=events_targets.SnsTopic(
-                                               topic=sns_topic,
-                                               message=events.RuleTargetInput.from_text(f"Build ID {events.EventField.from_path('$.detail.build-id')} for build project {events.EventField.from_path('$.detail.project-name')} has reached the build status of {events.EventField.from_path('$.detail.build-status')}. Link: {events.EventField.from_path('$.detail.additional-information.logs.deep-link')} ")),
-                                           )
+        # docker_image_build.on_state_change('ArkCase Docker Image Build Project State Change',
+        #                                    event_pattern=events.EventPattern(
+        #                                        source=["aws.codebuild"],
+        #                                        detail={
+        #                                            "build-status": [{"anything-but": ["IN_PROGRESS", "SUCCEEDED"]}],
+        #                                        }
+        #                                    ),
+        #                                    target=events_targets.SnsTopic(
+        #                                        topic=sns_topic,
+        #                                        message=events.RuleTargetInput.from_text(f"Build ID {events.EventField.from_path('$.detail.build-id')} for build project {events.EventField.from_path('$.detail.project-name')} has reached the build status of {events.EventField.from_path('$.detail.build-status')}. Link: {events.EventField.from_path('$.detail.additional-information.logs.deep-link')} ")),
+        #                                    )
 
         # add IAM policy to the Docker Image Build Role to allow it to access ECR
         docker_image_build.add_to_role_policy(iam.PolicyStatement(effect=iam.Effect.ALLOW,
