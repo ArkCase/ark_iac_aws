@@ -63,16 +63,21 @@ class PipelinesStack(core.Stack):
                                                                        "dateStamp=$(date +%Y%m%d)",
                                                                        "echo Repo Name: $repoName",
                                                                        "echo Commit ID: $commitId",
-                                                                       "ls",
                                                                        "existingTags=$(aws ecr list-images --repository-name $repoName --output json --query 'imageIds[*].imageTag')",
-                                                                       "echo Tags that already exist in this ECR repo: $existingTags"
+                                                                       "echo Tags that already exist in this ECR repo: $existingTags",
 
 
                                                                        # TODO: Unit tests
                                                                        # TODO: Static Analysis (tool TBD)
 
+                                                                       """
+                                                                       if test -f get-artifacts.sh; then
+                                                                         echo 'get-artifacts.sh file present'
+                                                                         ./get-artifacts.sh
+                                                                       fi
+                                                                       """,
 
-
+                                                                       "ls",
                                                                        f"""
                                                                        if test -f Dockerfile; then
                                                                         echo Build started on `date`
@@ -111,6 +116,14 @@ class PipelinesStack(core.Stack):
         docker_image_build.add_to_role_policy(iam.PolicyStatement(effect=iam.Effect.ALLOW,
                                                                   actions=['ecr:GetAuthorizationToken'],
                                                                   resources=['*']))
+
+        docker_image_build.add_to_role_policy(iam.PolicyStatement(effect=iam.Effect.ALLOW,
+                                                                  actions=['s3:ListBucket',
+                                                                           's3:GetObject'],
+                                                                  resources=[
+                                                                      'arn:aws:s3:::arkcase-container-artifacts',
+                                                                      'arn:aws:s3:::arkcase-container-artifacts/*',
+                                                                  ]))
 
         docker_image_build.add_to_role_policy(iam.PolicyStatement(effect=iam.Effect.ALLOW,
                                                                   actions=['ecr:ListImages',
