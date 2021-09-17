@@ -86,6 +86,7 @@ class PipelinesStack(core.Stack):
                                                                        """
                                                                        if test -f get-artifacts.sh; then
                                                                          echo 'get-artifacts.sh file present'
+                                                                         chmod +x get-artifacts.sh
                                                                          ./get-artifacts.sh
                                                                        fi
                                                                        """,
