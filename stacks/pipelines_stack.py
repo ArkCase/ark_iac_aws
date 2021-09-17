@@ -36,6 +36,8 @@ repos = ['ark_base',
          'ark_grafana_reporter',
          'ark_grafana_imagerend',
          'ark_grafana',
+         'ark_share',
+         'ark_alfresco_setup',
          ]
 
 # List of emails to subscribe to SNS topic notifications (ECR, CodeBuild, and CodePipeline failures)
