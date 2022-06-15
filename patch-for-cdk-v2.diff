@@ -1,0 +1,24 @@
+diff --git a/cdk.json b/cdk.json
+index 68f4712..898f42d 100644
+--- a/cdk.json
++++ b/cdk.json
+@@ -1,16 +1,16 @@
+ {
+   "app": "python3 app.py",
+   "context": {
+-    "@aws-cdk/aws-apigateway:usagePlanKeyOrderInsensitiveId": true,
++    "@aws-cdk/aws-apigateway:usagePlanKeyOrderInsensitiveId": false,
+     "@aws-cdk/core:enableStackNameDuplicates": "true",
+     "aws-cdk:enableDiffNoFail": "true",
+-    "@aws-cdk/core:stackRelativeExports": "true",
++    "@aws-cdk/core:stackRelativeExports": "false",
+     "@aws-cdk/aws-ecr-assets:dockerIgnoreSupport": true,
+     "@aws-cdk/aws-secretsmanager:parseOwnedSecretName": true,
+     "@aws-cdk/aws-kms:defaultKeyPolicies": true,
+     "@aws-cdk/aws-s3:grantWriteWithoutAcl": true,
+     "@aws-cdk/aws-ecs-patterns:removeDefaultDesiredCount": true,
+-    "@aws-cdk/aws-rds:lowercaseDbIdentifier": true,
++    "@aws-cdk/aws-rds:lowercaseDbIdentifier": false,
+     "@aws-cdk/aws-efs:defaultEncryptionAtRest": true
+   }
+ }
